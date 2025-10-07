@@ -18,9 +18,11 @@ This repository contains Docker configuration files and Spring Boot application 
 
 ### Running the Application
 
-1. Clone this repository
-2. Navigate to project directory
-3. Run the following command:
+1. Create your Spring project using Spring Initializer and insert the docker-compose and Dockerfile inside the Root folder of the project
+2. Adjust the files depending on your needs (dbName user and passwords)
+3. Add your ddls to the schema.sql
+4. Navigate to project directory
+5. Run the following command:
 
 ```bash
 docker-compose up --build
