@@ -1,0 +1,54 @@
+#THIS IS A GENERIC DOCKER-COMPOSE TO SETUP YOUR SPRING BOOT APP WITH A MYSQL DB
+version: '3.8'
+
+services:
+  #MYSQL Service
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      #DEFAULT VALUES
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: SOMEDB
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: springpass
+    #EXTERNALPORT:INTERNALPORT  
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    #this is necessary for both of them to share the same Docker Network
+    networks:
+      - spring-mysql-network
+    #DEFAULT health check (Spring Acuator would look different)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  #Spring-App Service
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-app
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: springpass
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        # DB -> health check? -> Spring App (ensures DB is up and running before App is up) 
+        condition: service_healthy
+    networks:
+      - spring-mysql-network
+#Network for both apps to use
+networks:
+  spring-mysql-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
